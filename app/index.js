@@ -1,30 +1,9 @@
 import express from "express";
+import shopify from "./shopify.js";
+import connection from "./db.js";
 import dotenv from "dotenv";
-import { shopifyApp } from "@shopify/shopify-app-express";
-import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
-
 
 dotenv.config();
-
-const shopify = shopifyApp({
-  api: {
-    apiKey: process.env.API_KEY,
-    apiSecretKey: process.env.API_SECRET_KEY,
-    scopes: ["read_products", "write_products"],
-    hostScheme: "https",
-    hostName: process.env.HOST_NAME,
-    isEmbeddedApp: false,
-    apiVersion: "2024-10",
-  },
-  auth: {
-    path: "/api/auth",
-    callbackPath: "/api/auth/callback",
-  },
-  webhooks: {
-    path: "/api/webhooks",
-  },
-  sessionStorage: new MemorySessionStorage(),
-});
 
 const app = express();
 app.listen(3000, () => {
@@ -57,8 +36,11 @@ const sessionCheck = async (req, res, next) => {
   next();
 };
 
-app.get("/", sessionCheck, (req, res) => {
-  res.send("home");
+app.get("/", sessionCheck, async (req, res) => {
+  console.log("home");
+  const [rows] = await connection.execute("SELECT * FROM users");
+  console.log(rows);
+  res.send("home111");
 });
 
 // Rest APIの実行（商品データ取得）
